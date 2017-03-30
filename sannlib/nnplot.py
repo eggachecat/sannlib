@@ -1,7 +1,9 @@
 import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+import matplotlib.lines as lines
+
 import logging
 import numpy as np
-
 
 
 class NeuralNetworkCanvas:
@@ -65,9 +67,9 @@ class NeuralNetworkCanvas:
         "#252F99", "#00CCFF", "#674E60", "#FC009C", "#92896B"
     ]
 
-    def __init__(self, figure_name=None, shape=(1, 1)):
+    def __init__(self, figure_name=None, shape=(1, 1), dpi=100):
         self.canvasMap = {}
-        self.figure = plt.figure()
+        self.figure = plt.figure(dpi=dpi)
         if figure_name:
             self.figure.canvas.set_window_title(figure_name)
         self.shape = shape
@@ -90,7 +92,18 @@ class NeuralNetworkCanvas:
         print("removing...", line)
         ax.lines.remove(line)
 
+    def get_axis(self, sub_canvas_id=1):
+        return self.add_canvas(sub_canvas_id)
+
     def draw_line_2d(self, k, b, color="b", sub_canvas_id=1):
+        """
+        
+        :param k: 
+        :param b: 
+        :param color: 
+        :param sub_canvas_id: 
+        :return: 
+        """
 
         ax = self.add_canvas(sub_canvas_id)
         line = self.ax_draw_line(ax, k, b)
@@ -99,19 +112,93 @@ class NeuralNetworkCanvas:
         return line
 
     def remove_line_2d(self, line, sub_canvas_id=1):
+        """
+        
+        :param line: 
+        :param sub_canvas_id: 
+        :return: 
+        """
         ax = self.add_canvas(sub_canvas_id)
         self.ax_remove_line(ax, line)
 
+    def add_line_2d(self, x_anchor, y_anchor, color="blue", lw=1, sub_canvas_id=1):
+        """
+        
+        :param x_anchor: 
+        :param y_anchor: 
+        :param color: 
+        :param lw: 
+        :param sub_canvas_id: 
+        :return: 
+        """
+        ax = self.add_canvas(sub_canvas_id)
+        ax.add_line(lines.Line2D(x_anchor, y_anchor, color=color, lw=lw))
+
+    def add_patch_rectangle(self, anchor, width, height, sub_canvas_id=1):
+        """
+        
+        :param anchor: 
+        :param width: 
+        :param height: 
+        :param sub_canvas_id: 
+        :return: 
+        """
+        ax = self.add_canvas(sub_canvas_id)
+        ax.add_patch(
+            patches.Rectangle(
+                anchor,
+                width,
+                height,
+            )
+        )
+
+    def set_axis_lim(self, x_range, y_range, sub_canvas_id=1):
+        ax = self.add_canvas(sub_canvas_id)
+        if x_range:
+            ax.set_xlim(x_range)
+        if y_range:
+            ax.set_ylim(y_range)
+
+    def clean_canvas(self, sub_canvas_id=1):
+        """
+        
+        :param sub_canvas_id: 
+        :return: 
+        """
+        ax = self.add_canvas(sub_canvas_id)
+        ax.clear()
+
     def add_canvas(self, sub_canvas_id):
+        """
+        
+        :param sub_canvas_id: 
+        :return: 
+        """
 
         if sub_canvas_id not in self.sub_canvas_exist:
             self.sub_canvas_exist[sub_canvas_id] = self.figure.add_subplot(self.shape[0], self.shape[1], sub_canvas_id)
-        else:
-            print("sub_canvas_id exists!! By default, the old canvas will not be removed")
+        # else:
+        #     pass
+        #     print("sub_canvas_id exists!! By default, the old canvas will not be removed")
 
         return self.sub_canvas_exist[sub_canvas_id]
 
-    def draw_data_point_2d(self, data, class_index, sub_canvas_id=1, marker_size=30):
+    def draw_line_chart_2d(self, x_data, y_data, sub_canvas_id=1, color="#03A9F4", line_style="dashed"):
+
+        ax = self.add_canvas(sub_canvas_id)
+        ax.plot(x_data, y_data, color=color, linestyle=line_style)
+
+        return ax
+
+    def draw_classification_data_point_2d(self, data, class_index, sub_canvas_id=1, marker_size=30):
+        """
+        
+        :param data: 
+        :param class_index: 
+        :param sub_canvas_id: 
+        :param marker_size: 
+        :return: 
+        """
 
         ax = self.add_canvas(sub_canvas_id)
 
@@ -144,6 +231,30 @@ class NeuralNetworkCanvas:
 
         return ax
 
+    def set_title(self, title, sub_canvas_id=1):
+        ax = self.add_canvas(sub_canvas_id)
+        ax.set_title(title)
+
+    def set_x_label(self, label, sub_canvas_id=1):
+        ax = self.add_canvas(sub_canvas_id)
+        ax.set_xlabel(label)
+
+    def set_y_label(self, label, sub_canvas_id=1):
+        ax = self.add_canvas(sub_canvas_id)
+        ax.set_ylabel(label)
+
+    def set_label(self, x_label, y_label, sub_canvas_id=1):
+        self.set_x_label(x_label, sub_canvas_id)
+        self.set_y_label(y_label, sub_canvas_id)
+
     def show(self, pause_interval=10):
         self.figure.show()
-        plt.pause(2)
+        plt.pause(pause_interval)
+
+    def froze(self):
+        self.figure.show()
+        plt.show()
+
+    def save(self, filename, sub_canvas_id=1):
+        self.figure.savefig(filename)
+        plt.close(self.figure)

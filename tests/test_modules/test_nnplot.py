@@ -8,11 +8,11 @@ import numpy as np
 
 data = np.loadtxt("assets/test_nnplot.txt")
 canvas = sannlib.nnplot.NeuralNetworkCanvas("data image")
-canvas.draw_data_point_2d(data, 2)
+canvas.draw_classification_data_point_2d(data, 2)
 
 line_blue = canvas.draw_line_2d(0.5, 0.3, "b")
 line_green = canvas.draw_line_2d(0.3, 0.2, "g")
 
-canvas.show()
+canvas.froze()
 canvas.remove_line_2d(line_blue)
-canvas.show()
+canvas.froze()
