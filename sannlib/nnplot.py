@@ -74,18 +74,33 @@ class NeuralNetworkCanvas:
             self.figure.canvas.set_window_title(figure_name)
         self.shape = shape
         self.lines = []
+        self.neuron_lines = dict()
+
         self.sub_canvas_exist = dict()
 
     @staticmethod
-    def ax_draw_line(ax, k, b):
+    def ax_draw_line(ax, k, b, line=None):
+        """
+        
+        :param ax: 
+        :param k: 
+        :param b: 
+        :param line: 
+        :return: 
+        """
 
-        x_min, x_max = ax.get_xlim()
-        x_range = np.arange(x_min, x_max, 0.05)
-        y_range = k * x_range + b
-
-        lines = ax.plot(x_range, y_range)
-        print("draw", b, "line_id:", lines[0])
-        return lines[0]
+        if line:
+            x_range = line.get_xdata()
+            y_range = k * x_range + b
+            line.set_ydata(y_range)
+            return line
+        else:
+            x_min, x_max = ax.get_xlim()
+            x_range = np.arange(x_min, x_max, 0.05)
+            y_range = k * x_range + b
+            lines_arr = ax.plot(x_range, y_range)
+            print("draw", b, "line_id:", lines_arr[0])
+            return lines_arr[0]
 
     @staticmethod
     def ax_remove_line(ax, line):
@@ -230,6 +245,34 @@ class NeuralNetworkCanvas:
             ax.scatter(x, y, c=point_color, marker=point_style, s=marker_size)
 
         return ax
+
+    def draw_neuron_lines(self, neuron_matrix, sub_canvas_id=1):
+        """
+        
+        :param neuron_matrix: 
+        :param sub_canvas_id: 
+        :return: 
+        """
+
+        weight_matrix = neuron_matrix.weight
+        bias_matrix = neuron_matrix.bias
+        number_of_lines = weight_matrix.shape[0]
+
+        ax = self.add_canvas(sub_canvas_id)
+        for i in range(number_of_lines):
+            k = -1 * weight_matrix[i, 0] / weight_matrix[i, 1]
+            b = -1 * bias_matrix[i, 0] / weight_matrix[i, 1]
+
+            if sub_canvas_id not in self.neuron_lines:
+                self.neuron_lines[sub_canvas_id] = dict()
+
+            if i in self.neuron_lines[sub_canvas_id]:
+                line = self.neuron_lines[sub_canvas_id][i]
+                self.ax_draw_line(ax, k, b, line)
+            else:
+                line = self.draw_line_2d(k, b, sub_canvas_id=sub_canvas_id)
+                line.set_color(self.__shuffle_colors[i+2])
+                self.neuron_lines[sub_canvas_id][i] = line
 
     def set_title(self, title, sub_canvas_id=1):
         ax = self.add_canvas(sub_canvas_id)
